@@ -3,98 +3,228 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Conways GameofLife</title>
+    <title>Document</title>
 </head>
 <body>
-    <!doctype html>
+    <button id="automate" onclick="automate()">Automate</button>
+    <button id="populate" onclick="populate()">Populate</button>
+    <button id="next" onclick="play()">Next generation</button>
+    <button id="clear" onclick="clearField()">Clear field</button>
+    <div id="grid">
+    </div>
+        
 
-<div id="grid"></div>
-<button id="next">Next generation</button>
-<button id="run">Auto run</button>
+    <style>
+        #grid{
+            display: grid;
+            margin-left: auto;
+            margin-right: auto;
+            grid-template-columns:repeat(30, 1fr);
+            grid-template-rows: repeat(30, 1fr);
+            border: 1px solid red;
+            width: 800px;
+            height: 800px;
+        }
+        .checkbox{
+            display: block;
+            border: 1px solid black;
+            justify-items: center;
+        }
+    </style>
+
+
 
 <script>
-  const width = 30, height = 15;
+let grid = document.getElementById("grid");
+let graph = {};
+let elements = [];
+let size = 900;
 
-   // I will represent the grid as an array of booleans.
 
-   let gridNode = document.querySelector("#grid");
-  // This holds the checkboxes that display the grid in the document.
-  let checkboxes = [];
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      let box = document.createElement("input");
-      box.type = "checkbox";
-      gridNode.appendChild(box);
-      checkboxes.push(box);
+// create grid
+
+for(let i = 1; i <=size; i++){
+let checkbox = document.createElement("input");
+checkbox.type = "checkbox";
+checkbox.id = i;
+checkbox.classList = "checkbox";
+elements.push(checkbox)
+grid.appendChild(checkbox);
+ 
+
+}
+
+
+let leftSide = [];
+let rightSide = [];
+let upSide = [];
+let downSide = [];
+let middlearr = [];
+let helper = [];
+
+function sides(start, stop, step, name){
+    
+    let entry = start;
+    while(entry <= stop){
+        name.push(entry);
+        entry = entry + step;
     }
-    gridNode.appendChild(document.createElement("br"));
-  }
-  function gridFromCheckboxes() {
-    return checkboxes.map(box => box.checked);
-  }
-  function checkboxesFromGrid(grid) {
-    grid.forEach((value, i) => checkboxes[i].checked = value);
-  }
+    
+    
+                return name;
+} 
 
-  function randomGrid() {
-    let result = [];
-    for (let i = 0; i < width * height; i++) {
-      result.push(Math.random() < 0.3);
-    }
-    return result;
-  }
+sides(59,869,30,helper);
 
-  checkboxesFromGrid(randomGrid());
-
-   // This does a two-dimensional loop over the square around the given
-  // x,y position, counting all fields that have a cell but are not the
-  // center field.
-  function countNeighbors(grid, x, y) {
-    let count = 0;
-    for (let y1 = Math.max(0, y - 1); y1 <= Math.min(height - 1, y + 1); y1++) {
-      for (let x1 = Math.max(0, x - 1); x1 <= Math.min(width - 1, x + 1); x1++) {
-        if ((x1 != x || y1 != y) && grid[x1 + y1 * width]) {
-          count++;
+function middle(start, stop, name){
+        
+    let entry = start;
+    while(entry <= stop){
+       if(helper.includes(entry)){
+            name.push(entry); 
+            entry = entry + 3;
         }
-      }
+            else{ 
+                name.push(entry);
+                entry ++
+            }
+        
+       
     }
-    return count;
-  }
+    return name;
+} 
+sides(31,871,30,leftSide);
+sides(60,870,30,rightSide);
+sides(2,29,1,upSide);
+sides(872,899,1,downSide);
+middle(32,869,middlearr);
 
-  function nextGeneration(grid) {
-    let newGrid = new Array(width * height);
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        let neighbors = countNeighbors(grid, x, y);
-        let offset = x + y * width;
-        if (neighbors < 2 || neighbors > 3) {
-          newGrid[offset] = false;
-        } else if (neighbors == 2) {
-          newGrid[offset] = grid[offset];
-        } else {
-          newGrid[offset] = true;
+
+
+
+function createGraph(){
+    for(let i = 1; i<=size;i++ ){
+        if(i == 1 ){
+            graph[i] = [2,31,32];
         }
-      }
+        
+        else if(i == 30 ){
+            graph[i] = [29,59,60];
+        }
+        else if(leftSide.includes(i)){
+            graph[i] = [i-30, i-29, i+1, i+30, i+31]
+        }
+        else if(middlearr.includes(i)){
+            graph[i] = [i-31, i-30, i-29, i-1, i+1, i+29, i+30, i+31];
+        }
+        else if(rightSide.includes(i)){
+            graph[i] = [i-31, i-30, i-1, i+29, i+30]
+        }
+
+        else if(upSide.includes(i)){
+            graph[i] = [i-1, i+1, i+29, i+30, i+31]
+        }
+        else if(downSide.includes(i)){
+            graph[i] = [i-31, i-30, i-29, i-1, i+1]
+        }
+        else if(i == 871 ){
+            graph[i] = [841,842,872];
+        }
+        else if(i == 900 ){
+            graph[i] = [869,870,899];
+        }
     }
-    return newGrid;
-  }
+    return graph;
+}
+createGraph();
 
-  function turn() {
-    checkboxesFromGrid(nextGeneration(gridFromCheckboxes()));
-  }
+function populate(){
+        let glyph = 0;
+        for(let i = 0; i<900; i++){
+            glyph = Math.random();
+            console.log(glyph);
+            if(glyph <0.3){
+                elements[i].checked = true;
+            }
+        }
+    };
 
-  document.querySelector("#next").addEventListener("click", turn);
-
-  let running = null;
-  document.querySelector("#run").addEventListener("click", () => {
-    if (running) {
-      clearInterval(running);
-      running = null;
-    } else {
-      running = setInterval(turn, 400);
+function clearField(){
+    
+    for(element of elements){
+        element.checked = false;
     }
-  });
-  </script>
+
+}
+let running = null;
+
+function automate(){
+    if(running){
+        clearInterval(running);
+        running = null;
+    }
+    else{
+        running = setInterval(play, 400);
+    }
+   
+}
+  
+    function play(){
+    let elements2 = [];
+    let graph2 = {};
+
+    //create an object with size entries of empty arrays
+
+    for(let i = 1; i<=size; i++){
+        graph2[i] = [];
+
+    }
+    
+
+    // get all the checked fields into elements2
+
+    for(let i=0; i<elements.length; i++){
+         if(elements[i].checked){
+            elements2.push(Number(elements[i].id)) 
+        }
+
+    }
+    
+
+    // populate graph 
+
+    for(let i = 1; i <=size; i++){
+        for(let j = 0; j < elements2.length; j++){
+
+        
+        if(graph[i].includes(elements2[j])){
+            graph2[i].push(elements2[j]) ;
+          
+        }
+       
+    }
+}
+
+//check condition and apply changes to the field
+    
+    for(let element of elements){
+      
+       
+        if(element.checked == false && graph2[element.id].length == 3){
+            element.checked = true;}
+
+        else if(element.checked == true && (graph2[element.id].length == 2|| graph2[element.id].length==3)){
+        element.checked = true;}
+        else{
+            element.checked = false;
+        }
+         
+       
+    
+      };
+}
+
+</script>
     
 </body>
 </html>
